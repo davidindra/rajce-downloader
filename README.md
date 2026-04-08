@@ -45,6 +45,8 @@ Download latest windows binaries and source code from [GitHub releases](https://
 
 # Changelog
 
+* 1.5.24 - Fixed a bug with missing album name, Fixed a bug with options enabled during active download
+* 1.5.23 - Fix of #23 - Downloading is not working, Submodules update
 * 1.5.22 - Build and release Windows binaries using GitHub actions
 * 1.5.21 - Submodules update to fix build error
 * 1.5.20 - Option to continue with download in case of error 404 Not Found
