@@ -45,7 +45,6 @@ struct QueueData {
 	Upp::String download_url;
 	Upp::String download_dir;
 	Upp::String download_name;
-	Upp::String album_server_dir;
 };
 
 class Rajce : public Upp::WithRajceLayout<Upp::TopWindow> {

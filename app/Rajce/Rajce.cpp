@@ -522,10 +522,6 @@ int Rajce::HttpParse() {
 	}
 
 	String txt;
-
-	bool album_storage_found = false;
-	String album_storage;
-	String album_server_dir;
 	String album_name;
 
 	q.Clear();
@@ -554,29 +550,7 @@ int Rajce::HttpParse() {
 			break;
 		}
 
-		if (txt.Find("storage") > 0) {
-			album_storage = HttpGetParameterValue("storage", txt);
-			album_storage_found = true;
-			continue;
-		}
-
-		if (txt.Find("albumServerDir") > 0) {
-			album_server_dir = HttpGetParameterValue("albumServerDir", txt);
-#ifdef PLATFORM_WIN32
-			// remove all '.' from the end of the album name
-			int dir_len = album_server_dir.GetCount();
-			while ((dir_len > 0) && (album_server_dir[--dir_len] == '.'))
-				album_server_dir.Remove(dir_len);
-#endif
-			continue;
-		}
-
-		if (txt.Find("albumName") > 0) {
-			album_name = HttpGetParameterValue("albumName", txt);
-			continue;
-		}
-
-		if ((album_storage_found) && (txt.Find("photos") > 0) && (txt.Find("photoID") > 0)) {
+		if (txt.Find("settings") && (txt.Find("legacy_media") > 0) && (txt.Find("photoID") > 0)) {
 			int pos = txt.FindFirstOf("[");
 			Value photos = ParseJSON(txt.Mid(pos));
 
@@ -584,18 +558,19 @@ int Rajce::HttpParse() {
 
 				String is_video = photos[i]["isVideo"].ToString();
 				String file_name = photos[i]["fileName"].ToString();
+				String image_url = photos[i]["image_url"].ToString();
+				String video_url = photos[i]["video_url"].ToString();
 
 				String full_path;
 
 				if (is_video.Compare("true") == 0) {
 					if (download_video.GetData()) {
-						String video_format = photos[i]["videoStructure"]["items"][1]["video"][0]["format"].ToString();
+						String video_format = photos[i]["video_structure"]["items"][1]["video"][0]["format"].ToString();
 						file_name = file_name + '.' + video_format;
-						full_path = UnixPath(photos[i]["videoStructure"]["items"][1]["video"][0]["file"].ToString());
+						full_path = UnixPath(video_url);
 					}
 				} else {
-					full_path = AppendFileName(album_storage, "images");
-					full_path = UnixPath(AppendFileName(full_path, file_name));
+					full_path = UnixPath(image_url);
 				}
 
 				if (full_path.GetCount() > 0) {
@@ -609,7 +584,6 @@ int Rajce::HttpParse() {
 					queue_data.download_url = full_path;
 					queue_data.download_dir = download_dir.GetData();
 					queue_data.download_name = file_name;
-					queue_data.album_server_dir = album_server_dir;
 
 					if (~append_user_name && ~album_authorization) {
 						queue_data.download_dir = AppendFileName(queue_data.download_dir, album_user.GetData().ToString());
@@ -619,8 +593,7 @@ int Rajce::HttpParse() {
 					}
 
 					// Check if the file is already downloaded
-					String test = AppendFileName(queue_data.download_dir, queue_data.album_server_dir);
-					test = AppendFileName(test, queue_data.download_name);
+					String test = AppendFileName(queue_data.download_dir, queue_data.download_name);
 					if (download_new_only.GetData() != 0 && FileExists(test)) {
 						continue;
 					}
@@ -646,8 +619,7 @@ void Rajce::FileDownload() {
 			QueueData queue_data = q[i];
 			String file_download = UnixPath(queue_data.download_url);
 
-			file_http_out_string = AppendFileName(queue_data.download_dir, queue_data.album_server_dir);
-			file_http_out_string = AppendFileName(file_http_out_string, queue_data.download_name);
+			file_http_out_string = AppendFileName(queue_data.download_dir, queue_data.download_name);
 
 			// Download the file
 			file_http.New();
