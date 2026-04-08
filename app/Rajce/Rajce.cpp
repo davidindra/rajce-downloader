@@ -498,10 +498,12 @@ String Rajce::HttpGetParameterValue(const String &param, const String &txt) {
 	int pos_param = txt.Find(param);
 
 	if (pos_param > -1) {
-		int pos_first = txt.FindFirstOf(test_char, pos_param) + 1;
-		int pos_last = txt.Find(test_char, pos_first);
-
-		parameter_value = txt.Mid(pos_first, (pos_last - pos_first));
+		int pos_colon = txt.FindFirstOf(":", pos_param);
+		if (pos_colon > -1) {
+			int pos_first = txt.FindFirstOf(test_char, pos_colon) + 1;
+			int pos_last = txt.Find(test_char, pos_first);
+			parameter_value = txt.Mid(pos_first, (pos_last - pos_first));
+		}
 	}
 
 	return (DecodeEscapedUtf(parameter_value));
@@ -553,6 +555,8 @@ int Rajce::HttpParse() {
 		if (txt.Find("settings") && (txt.Find("legacy_media") > 0) && (txt.Find("photoID") > 0)) {
 			int pos = txt.FindFirstOf("[");
 			Value photos = ParseJSON(txt.Mid(pos));
+
+			album_name = HttpGetParameterValue("album_name", txt);
 
 			for (int i = 0; i < photos.GetCount(); ++i) {
 
@@ -847,9 +851,11 @@ void Rajce::EnableElements(bool enable) {
 
 	album_user.Enable(enable);
 	album_pass.Enable(enable);
+	append_user_name.Enable(enable);
 	append_album_name.Enable(enable);
 	album_authorization.Enable(enable);
 	download_protocol.Enable(enable);
+	download_continue.Enable(enable);
 	proxy_enabled.Enable(enable);
 
 	http_proxy_url.Enable(enable);
