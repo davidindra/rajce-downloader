@@ -558,6 +558,16 @@ int Rajce::HttpParse() {
 
 			album_name = HttpGetParameterValue("album_name", txt);
 
+#ifdef PLATFORM_WIN32
+			// replace all characters prohibited in file and directory names in Windows
+			album_name.Replace("<", "_");
+			album_name.Replace(">", "_");
+			album_name.Replace("?", "_");
+			album_name.Replace(":", "_");
+			album_name.Replace("*", "_");
+			album_name.Replace("\\", "_");
+#endif
+
 			for (int i = 0; i < photos.GetCount(); ++i) {
 
 				String is_video = photos[i]["isVideo"].ToString();
