@@ -19,6 +19,15 @@
     }
   },
   "background": {
-    "service_worker": "background.js"
-  }
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.rajce.idnes.cz/*", "*://*.rajce.net/*"],
+      "js": ["content/albumlist.js"],
+      "css": ["content/albumlist.css"],
+      "run_at": "document_idle"
+    }
+  ]
 }

@@ -44,6 +44,20 @@ page with install instructions.
      compression; media is already compressed).
 4. Click **Download**.
 
+## One-click download from a user's album list
+
+When you browse any rajce user's album-list page (e.g.
+`https://<user>.rajce.idnes.cz/`), the extension's content script adds a small
+download icon next to each album's name. Clicking it **immediately** downloads
+that whole album into `Downloads/<user>/<album>/` (straight to the folder — not a
+ZIP) and shows a progress overlay on the tile, with a Cancel button.
+
+Because album tiles are rendered by rajce's own JavaScript, the script waits for
+them via a `MutationObserver` and re-decorates on pagination. The download runs
+in the background service worker (`src/album-download.js`) and reuses your
+existing rajce session cookies, so your own (including protected) albums work
+without re-entering credentials.
+
 ## How it maps to the desktop app
 
 | Desktop (C++/U++)                                   | Extension                                            |

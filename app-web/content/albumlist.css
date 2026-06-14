@@ -1,0 +1,106 @@
+/* Inline download button next to an album name. */
+.rajce-dl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: 6px;
+  padding: 0;
+  vertical-align: middle;
+  color: #fff;
+  background: #2d7d46;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: background 0.15s, transform 0.1s;
+}
+.rajce-dl-btn:hover {
+  background: #266a3b;
+  transform: scale(1.08);
+}
+.rajce-dl-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+}
+
+/* Progress overlay covering the album tile during download. */
+.rajce-dl-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  text-align: center;
+  color: #fff;
+  background: rgba(20, 22, 25, 0.82);
+  border-radius: 8px;
+  font: 13px/1.4 "Segoe UI", Roboto, system-ui, sans-serif;
+  backdrop-filter: blur(2px);
+}
+
+.rajce-dl-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: rajce-dl-spin 0.8s linear infinite;
+}
+@keyframes rajce-dl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rajce-dl-text {
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.rajce-dl-bar {
+  width: 80%;
+  max-width: 180px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.rajce-dl-bar-fill {
+  height: 100%;
+  width: 0;
+  background: #4caf6e;
+  transition: width 0.2s ease;
+}
+
+.rajce-dl-cancel {
+  margin-top: 2px;
+  padding: 3px 12px;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+}
+.rajce-dl-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.rajce-dl-overlay.is-done .rajce-dl-spinner {
+  border-top-color: #4caf6e;
+  border-color: #4caf6e;
+  animation: none;
+}
+.rajce-dl-overlay.is-error {
+  background: rgba(120, 30, 30, 0.85);
+}
+.rajce-dl-overlay.is-error .rajce-dl-spinner {
+  display: none;
+}
