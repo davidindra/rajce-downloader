@@ -58,27 +58,41 @@
     return u.origin + u.pathname.replace(/\/+$/, "");
   }
 
-  // Nearest ancestor (within the list) that contains the thumbnail image.
+  // Nearest ancestor that is an album tile (or, failing that, a reasonable card).
   function tileFor(anchor) {
-    let el = anchor.parentElement;
-    while (el && el !== list) {
-      if (el.querySelector && el.querySelector("img")) return el;
-      el = el.parentElement;
-    }
+    const tile = anchor.closest(".album-item, .rajce-photo-card, .product, [data-id]");
+    if (tile && tile !== list) return tile;
     return anchor.parentElement || anchor;
   }
 
   function decorate() {
-    const anchors = Array.from(list.querySelectorAll("a[href]")).filter((a) =>
-      isAlbumUrl(a.href)
-    );
+    // Primary path: the real rajce.idnes album-list markup.
+    let decorated = 0;
+    list.querySelectorAll(".album-item").forEach((tile) => {
+      if (tile.dataset.rajceDecorated) return;
+      const nameAnchor = tile.querySelector(".name a[href]") || tile.querySelector(".bottom-info a[href]");
+      if (!nameAnchor) return;
+
+      const perma = tile.querySelector("[data-permanent-link]");
+      const rawUrl = (perma && perma.getAttribute("data-permanent-link")) || nameAnchor.getAttribute("href");
+      if (!rawUrl || !isAlbumUrl(rawUrl)) return;
+
+      tile.dataset.rajceDecorated = "1";
+      const nameEl = tile.querySelector("[data-album-name]");
+      const name = (nameEl && nameEl.getAttribute("data-album-name")) || nameAnchor.textContent.trim();
+      injectButton(tile, nameAnchor, new URL(rawUrl, location.href).href, name);
+      decorated++;
+    });
+    if (decorated > 0) return;
+
+    // Fallback: generic anchor scan for other/older markup.
+    const anchors = Array.from(list.querySelectorAll("a[href]")).filter((a) => isAlbumUrl(a.href));
     const groups = new Map();
     for (const a of anchors) {
       const key = albumKey(a.href);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(a);
     }
-
     for (const [url, group] of groups) {
       const nameAnchor = group.find((a) => a.textContent.trim().length > 0) || group[0];
       const tile = tileFor(nameAnchor);
