@@ -1,0 +1,63 @@
+name: Build & release web extension
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "app-web/**"
+      - ".github/workflows/extension-release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read extension version
+        id: ver
+        run: |
+          VERSION=$(jq -r .version app-web/manifest.json)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=web-v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "asset=rajce-album-downloader-extension-v$VERSION.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Package extension (manifest at archive root)
+        run: |
+          cd app-web
+          zip -r "../${{ steps.ver.outputs.asset }}" . -x '*.DS_Store' '*/.*'
+          cd ..
+          unzip -l "${{ steps.ver.outputs.asset }}" | head -n 20
+
+      - name: Skip if this version was already released
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "${{ steps.ver.outputs.tag }}" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release ${{ steps.ver.outputs.tag }} already exists — skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create release and upload build
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.ver.outputs.tag }}" \
+            "${{ steps.ver.outputs.asset }}" \
+            -R "$GITHUB_REPOSITORY" \
+            --title "Web extension ${{ steps.ver.outputs.version }}" \
+            --notes "Automated build of the \`app-web\` browser extension (v${{ steps.ver.outputs.version }}).
+
+          **Install (Chrome / Edge / Brave):**
+          1. Download \`${{ steps.ver.outputs.asset }}\` below and unzip it.
+          2. Open \`chrome://extensions\`, enable **Developer mode**.
+          3. **Load unpacked** and select the unzipped folder.
+
+          Chrome does not allow one-click \`.crx\` installs from outside the Chrome Web Store, so the build ships as a loadable \`.zip\`."

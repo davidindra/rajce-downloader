@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rajce album downloader — browser extension</title>
+    <style>
+      :root { --accent: #2d7d46; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; color: #1c1e21; background: #f4f5f7;
+        font: 16px/1.6 "Segoe UI", Roboto, system-ui, sans-serif;
+      }
+      .wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 64px; }
+      header { display: flex; align-items: center; gap: 16px; }
+      header img { width: 56px; height: 56px; }
+      h1 { font-size: 28px; margin: 0; }
+      .lead { color: #555; }
+      .card {
+        background: #fff; border: 1px solid #d6d9de; border-radius: 10px;
+        padding: 20px 24px; margin: 20px 0;
+      }
+      code, pre { background: #eef0f2; border-radius: 4px; }
+      code { padding: 1px 5px; }
+      pre { padding: 12px 14px; overflow:auto; }
+      ol { padding-left: 20px; }
+      a { color: var(--accent); }
+      .note { font-size: 14px; color: #6b7280; }
+      .card--download { border-color: var(--accent); }
+      .btn {
+        display: inline-block; background: var(--accent); color: #fff;
+        padding: 12px 22px; border-radius: 8px; font-weight: 600;
+        text-decoration: none; margin-right: 10px;
+      }
+      .btn:hover { background: #266a3b; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <img src="../app-web/icons/icon128.png" alt="Rajce logo" />
+        <div>
+          <h1>Rajce album downloader</h1>
+          <p class="lead">A browser-extension equivalent of the U++ desktop app — download images and videos from <a href="https://www.rajce.net">rajce.net</a> albums, including password-protected ones.</p>
+        </div>
+      </header>
+
+      <div class="card">
+        <h2>Why an extension and not a plain web page?</h2>
+        <p>rajce.net does not send CORS headers, so a page hosted on GitHub Pages cannot fetch album pages or media directly. A browser extension is granted cross-origin access to rajce.net via its manifest <code>host_permissions</code>, so it works without any proxy and keeps your credentials on your machine.</p>
+      </div>
+
+      <div class="card card--download">
+        <h2>Download &amp; install (Chrome / Edge / Brave)</h2>
+        <p>
+          <a id="downloadBtn" class="btn" href="https://github.com/davidindra/rajce-downloader/releases/latest">
+            Download latest build (.zip)
+          </a>
+          <span id="downloadMeta" class="note"></span>
+        </p>
+        <ol>
+          <li>Click the button above to download the latest packaged build.</li>
+          <li>Unzip it to a folder of your choice.</li>
+          <li>Open <code>chrome://extensions</code> (or <code>edge://extensions</code>).</li>
+          <li>Enable <strong>Developer mode</strong>.</li>
+          <li>Click <strong>Load unpacked</strong> and select the unzipped folder.</li>
+          <li>Click the toolbar icon to open the downloader.</li>
+        </ol>
+        <p class="note">
+          Chrome blocks one-click installs of <code>.crx</code> files from outside the
+          Chrome Web Store, so the build is shipped as a <code>.zip</code> you load unpacked.
+          See <a href="https://github.com/davidindra/rajce-downloader/tree/master/app-web">app-web/README.md</a>
+          for details and limitations.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Usage</h2>
+        <ol>
+          <li>Paste an album URL (e.g. <code>https://user.rajce.net/album</code>).</li>
+          <li>For protected albums, tick <em>Enable album authorization</em> and fill user + password.</li>
+          <li>Choose how to save: into your Downloads folder, or as a single ZIP.</li>
+          <li>Click <strong>Download</strong>.</li>
+        </ol>
+      </div>
+    </div>
+
+    <script>
+      // Point the download button at the latest release's .zip asset.
+      const REPO = "davidindra/rajce-downloader";
+      const btn = document.getElementById("downloadBtn");
+      const meta = document.getElementById("downloadMeta");
+      fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
+        headers: { Accept: "application/vnd.github+json" },
+      })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
+        .then((rel) => {
+          const asset = (rel.assets || []).find((a) => a.name.endsWith(".zip"));
+          if (asset) {
+            btn.href = asset.browser_download_url;
+            const mb = (asset.size / 1048576).toFixed(2);
+            meta.textContent = `${rel.tag_name} · ${mb} MB`;
+          }
+        })
+        .catch(() => {
+          meta.textContent = "(no release yet — falls back to the releases page)";
+        });
+    </script>
+  </body>
+</html>
