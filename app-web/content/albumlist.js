@@ -102,6 +102,12 @@
     }
   }
 
+  function ensureRelative(tile) {
+    if (getComputedStyle(tile).position === "static") {
+      tile.style.setProperty("position", "relative", "important");
+    }
+  }
+
   function injectButton(tile, nameAnchor, url, name) {
     const btn = document.createElement("button");
     btn.type = "button";
@@ -115,11 +121,16 @@
       startDownload(tile, btn, url, name);
     });
 
-    nameAnchor.insertAdjacentElement("afterend", btn);
+    // Place the icon as an overlay in the tile's top-right corner.
+    ensureRelative(tile);
+    tile.appendChild(btn);
   }
 
+  // The overlay is a fixed-position element pinned to the tile via its bounding
+  // rect (kept in sync with requestAnimationFrame). This makes it immune to the
+  // page's hover re-layouts, which otherwise made an absolute/inset overlay
+  // momentarily anchor to the whole album container.
   function makeOverlay(tile) {
-    if (getComputedStyle(tile).position === "static") tile.style.position = "relative";
     const overlay = document.createElement("div");
     overlay.className = "rajce-dl-overlay";
     overlay.innerHTML =
@@ -127,12 +138,28 @@
       '<div class="rajce-dl-text"></div>' +
       '<div class="rajce-dl-bar"><div class="rajce-dl-bar-fill"></div></div>' +
       '<button type="button" class="rajce-dl-cancel"></button>';
-    tile.appendChild(overlay);
+    document.body.appendChild(overlay);
+
+    let raf = 0;
+    const reposition = () => {
+      const r = tile.getBoundingClientRect();
+      overlay.style.left = `${r.left}px`;
+      overlay.style.top = `${r.top}px`;
+      overlay.style.width = `${r.width}px`;
+      overlay.style.height = `${r.height}px`;
+      raf = requestAnimationFrame(reposition);
+    };
+    reposition();
+
     return {
       el: overlay,
       text: overlay.querySelector(".rajce-dl-text"),
       fill: overlay.querySelector(".rajce-dl-bar-fill"),
       cancel: overlay.querySelector(".rajce-dl-cancel"),
+      destroy: () => {
+        cancelAnimationFrame(raf);
+        overlay.remove();
+      },
     };
   }
 
@@ -150,7 +177,7 @@
       try {
         port.disconnect();
       } catch {}
-      if (!keep) ov.el.remove();
+      if (!keep) ov.destroy();
     };
 
     ov.cancel.addEventListener("click", () => cleanup(false));
@@ -188,7 +215,7 @@
     });
 
     port.onDisconnect.addListener(() => {
-      if (!finished) ov.el.remove();
+      if (!finished) ov.destroy();
     });
 
     port.postMessage({ type: "start", url, name });
