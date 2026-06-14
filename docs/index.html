@@ -26,6 +26,13 @@
       ol { padding-left: 20px; }
       a { color: var(--accent); }
       .note { font-size: 14px; color: #6b7280; }
+      .card--download { border-color: var(--accent); }
+      .btn {
+        display: inline-block; background: var(--accent); color: #fff;
+        padding: 12px 22px; border-radius: 8px; font-weight: 600;
+        text-decoration: none; margin-right: 10px;
+      }
+      .btn:hover { background: #266a3b; }
     </style>
   </head>
   <body>
@@ -43,16 +50,28 @@
         <p>rajce.net does not send CORS headers, so a page hosted on GitHub Pages cannot fetch album pages or media directly. A browser extension is granted cross-origin access to rajce.net via its manifest <code>host_permissions</code>, so it works without any proxy and keeps your credentials on your machine.</p>
       </div>
 
-      <div class="card">
-        <h2>Install (unpacked, Chrome/Edge)</h2>
+      <div class="card card--download">
+        <h2>Download &amp; install (Chrome / Edge / Brave)</h2>
+        <p>
+          <a id="downloadBtn" class="btn" href="https://github.com/davidindra/rajce-downloader/releases/latest">
+            Download latest build (.zip)
+          </a>
+          <span id="downloadMeta" class="note"></span>
+        </p>
         <ol>
-          <li>Download or clone this repository.</li>
+          <li>Click the button above to download the latest packaged build.</li>
+          <li>Unzip it to a folder of your choice.</li>
           <li>Open <code>chrome://extensions</code> (or <code>edge://extensions</code>).</li>
           <li>Enable <strong>Developer mode</strong>.</li>
-          <li>Click <strong>Load unpacked</strong> and select the <code>app-web/</code> folder.</li>
+          <li>Click <strong>Load unpacked</strong> and select the unzipped folder.</li>
           <li>Click the toolbar icon to open the downloader.</li>
         </ol>
-        <p class="note">See <a href="https://github.com/CoolmanCZ/rajce/tree/master/app-web">app-web/README.md</a> for details and limitations.</p>
+        <p class="note">
+          Chrome blocks one-click installs of <code>.crx</code> files from outside the
+          Chrome Web Store, so the build is shipped as a <code>.zip</code> you load unpacked.
+          See <a href="https://github.com/davidindra/rajce-downloader/tree/master/app-web">app-web/README.md</a>
+          for details and limitations.
+        </p>
       </div>
 
       <div class="card">
@@ -65,5 +84,27 @@
         </ol>
       </div>
     </div>
+
+    <script>
+      // Point the download button at the latest release's .zip asset.
+      const REPO = "davidindra/rajce-downloader";
+      const btn = document.getElementById("downloadBtn");
+      const meta = document.getElementById("downloadMeta");
+      fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
+        headers: { Accept: "application/vnd.github+json" },
+      })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
+        .then((rel) => {
+          const asset = (rel.assets || []).find((a) => a.name.endsWith(".zip"));
+          if (asset) {
+            btn.href = asset.browser_download_url;
+            const mb = (asset.size / 1048576).toFixed(2);
+            meta.textContent = `${rel.tag_name} · ${mb} MB`;
+          }
+        })
+        .catch(() => {
+          meta.textContent = "(no release yet — falls back to the releases page)";
+        });
+    </script>
   </body>
 </html>
