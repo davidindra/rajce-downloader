@@ -36,6 +36,8 @@ async function fetchToBlob(url, signal, onProgress) {
   if (!res.ok) throw new HttpError(res.status, res.statusText);
 
   const total = Number(res.headers.get("content-length")) || 0;
+  // Keep the real content type so the saved file gets the right kind, never .txt.
+  const type = (res.headers.get("content-type") || "").split(";")[0].trim();
   if (!res.body) {
     const blob = await res.blob();
     onProgress(blob.size, blob.size || 1);
@@ -52,7 +54,7 @@ async function fetchToBlob(url, signal, onProgress) {
     loaded += value.length;
     onProgress(loaded, total || loaded);
   }
-  return new Blob(chunks);
+  return new Blob(chunks, type ? { type } : undefined);
 }
 
 function saveViaDownloads(blob, relPath) {
