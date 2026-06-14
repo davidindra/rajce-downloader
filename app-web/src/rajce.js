@@ -137,6 +137,31 @@ function collapseDoubleSlashes(u) {
   return u.slice(0, start) + u.slice(start).replace(/\/{2,}/g, "/");
 }
 
+function hasExtension(name) {
+  return /\.[A-Za-z0-9]{1,5}$/.test(name);
+}
+
+// Extract a file extension from a URL's last path segment, ignoring ?query/#hash.
+function extensionFromUrl(url) {
+  let path = url;
+  try {
+    path = new URL(url).pathname;
+  } catch {
+    path = url.split("?")[0].split("#")[0];
+  }
+  const seg = path.slice(path.lastIndexOf("/") + 1);
+  const m = seg.match(/\.([A-Za-z0-9]{1,5})$/);
+  return m ? m[1] : "";
+}
+
+// rajce's `fileName` field has no extension for images (it lives in the URL),
+// so derive it from the URL to avoid browsers defaulting to .txt.
+function ensureExtension(name, url) {
+  if (hasExtension(name)) return name;
+  const ext = extensionFromUrl(url);
+  return ext ? `${name}.${ext}` : name;
+}
+
 // Port of the per-photo loop in HttpParse(): turn parsed photos into download
 // entries. `downloadVideo` controls whether videos are included.
 export function buildQueue(photos, { downloadVideo = true } = {}) {
@@ -156,7 +181,10 @@ export function buildQueue(photos, { downloadVideo = true } = {}) {
       url = String(p.image_url ?? "");
     }
 
-    if (url) items.push({ url: collapseDoubleSlashes(url), name, isVideo });
+    if (url) {
+      url = collapseDoubleSlashes(url);
+      items.push({ url, name: ensureExtension(name, url), isVideo });
+    }
   }
   return items;
 }
