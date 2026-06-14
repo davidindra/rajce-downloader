@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Rajce album downloader",
+  "version": "1.5.25",
+  "description": "Download images and videos from rajce.net albums, including password-protected ones. Web/extension equivalent of the U++ desktop app.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["downloads", "storage", "tabs"],
+  "host_permissions": ["*://*.rajce.net/*", "*://*.rajce.idnes.cz/*"],
+  "action": {
+    "default_title": "Rajce album downloader",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

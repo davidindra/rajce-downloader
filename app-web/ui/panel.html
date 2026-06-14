@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rajce album downloader</title>
+    <link rel="stylesheet" href="panel.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="app__header">
+        <img src="../icons/icon48.png" alt="" class="app__logo" />
+        <h1 id="appTitle" class="app__title">Rajce album downloader</h1>
+        <button id="langBtn" class="lang" type="button" title="Switch language"></button>
+      </header>
+
+      <fieldset class="box">
+        <legend id="lblAlbum">Album</legend>
+
+        <div class="row">
+          <label id="lblAlbumUrl" for="albumUrl">Album URL:</label>
+          <input id="albumUrl" type="url" list="albumUrlList" placeholder="https://www.rajce.net" />
+          <datalist id="albumUrlList"></datalist>
+        </div>
+
+        <div class="row row--auth">
+          <label id="lblAlbumUser" for="albumUser">Album user:</label>
+          <input id="albumUser" type="text" autocomplete="username" />
+          <label id="lblAlbumPass" for="albumPass">Album password:</label>
+          <input id="albumPass" type="password" autocomplete="current-password" />
+        </div>
+      </fieldset>
+
+      <fieldset class="box">
+        <legend id="lblSettings">Settings</legend>
+
+        <label class="opt"><input id="enableAuth" type="checkbox" /> <span id="lblEnableAuth">Enable album authorization</span></label>
+        <label class="opt"><input id="appendUserName" type="checkbox" /> <span id="lblAppendUser">Append user name to download directory</span></label>
+        <label class="opt"><input id="appendAlbumName" type="checkbox" /> <span id="lblAppendAlbum">Append album name to download directory</span></label>
+        <label class="opt"><input id="downloadNewOnly" type="checkbox" /> <span id="lblNewOnly">Download new files only</span></label>
+        <label class="opt"><input id="downloadVideo" type="checkbox" /> <span id="lblVideo">Download video files</span></label>
+        <label class="opt"><input id="downloadContinue" type="checkbox" /> <span id="lblContinue">Continue with download in case of error 404 Not Found</span></label>
+
+        <div class="row row--save">
+          <span id="lblSaveMode" class="row__label">Save mode:</span>
+          <label class="opt opt--inline"><input type="radio" name="saveMode" value="downloads" /> <span id="lblSaveDownloads">Save into Downloads</span></label>
+          <label class="opt opt--inline"><input type="radio" name="saveMode" value="zip" /> <span id="lblSaveZip">Single ZIP</span></label>
+        </div>
+
+        <div class="row">
+          <label id="lblSubfolder" for="subfolder">Sub-folder name:</label>
+          <input id="subfolder" type="text" placeholder="rajce" />
+        </div>
+        <p id="subfolderHint" class="hint"></p>
+      </fieldset>
+
+      <fieldset class="box box--progress">
+        <legend id="lblProgress">Download progress</legend>
+        <div id="statusText" class="status"></div>
+        <progress id="fileProgress" max="1" value="0"></progress>
+        <div id="fileName" class="filename"></div>
+      </fieldset>
+
+      <footer class="app__footer">
+        <a id="homepage" href="https://github.com/CoolmanCZ/rajce" target="_blank" rel="noopener">Rajce album downloader homepage</a>
+        <span class="spacer"></span>
+        <button id="abortBtn" type="button" class="btn btn--secondary" hidden>Abort</button>
+        <button id="downloadBtn" type="button" class="btn btn--primary">Download</button>
+      </footer>
+    </main>
+
+    <script type="module" src="panel.js"></script>
+  </body>
+</html>
