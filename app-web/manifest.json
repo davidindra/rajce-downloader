@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Rajce album downloader",
-  "version": "1.5.26",
+  "version": "1.5.27",
   "description": "Download images and videos from rajce.net albums, including password-protected ones. Web/extension equivalent of the U++ desktop app.",
   "icons": {
     "16": "icons/icon16.png",
