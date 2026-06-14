@@ -1,19 +1,21 @@
-/* Inline download button next to an album name. */
+/* Download button overlaid in the album tile's top-right corner. */
 .rajce-dl-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 30;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  margin-left: 6px;
+  width: 32px;
+  height: 32px;
   padding: 0;
-  vertical-align: middle;
   color: #fff;
   background: #2d7d46;
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   transition: background 0.15s, transform 0.1s;
 }
 .rajce-dl-btn:hover {
@@ -26,11 +28,11 @@
   transform: none;
 }
 
-/* Progress overlay covering the album tile during download. */
+/* Progress overlay pinned over the album tile during download (fixed-position,
+   positioned from JS so it never anchors to the wider album container). */
 .rajce-dl-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 50;
+  position: fixed;
+  z-index: 2147483000;
   display: flex;
   flex-direction: column;
   align-items: center;
