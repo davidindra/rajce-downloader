@@ -81,9 +81,31 @@ function extractJsonArray(s, start) {
   return null;
 }
 
-// Port of HttpParse(): locate the JS line holding the photo array (it carries
-// both `legacy_media` and `photoID`), then JSON.parse the array. Returns either
-// { error } or { albumName, photos }.
+// Locate the `legacy_media` array. The album page embeds it in a single huge
+// `var settings = {...}` script line that also holds several unrelated arrays
+// *before* it (promoted_tag_groups, ads_templates, ...), so the array has to be
+// anchored on the key itself -- taking the first '[' of the line picks up the
+// promoted tag list instead of the photos.
+function findMediaArray(s) {
+  const re = /["']?legacy_media["']?\s*:\s*\[/g;
+  let m;
+  while ((m = re.exec(s)) !== null) {
+    const candidate = extractJsonArray(s, re.lastIndex - 1);
+    if (candidate && candidate.includes('"photoID"')) return candidate;
+  }
+  return null;
+}
+
+// Every entry of the photo array carries at least a photoID / image_url. Used as
+// a sanity check so a wrong array never silently yields an empty download queue.
+function looksLikeMedia(arr) {
+  return arr.every(
+    (p) => p && typeof p === "object" && (p.photoID !== undefined || p.image_url !== undefined)
+  );
+}
+
+// Port of HttpParse(): locate the photo array, then JSON.parse it. Returns
+// either { error } or { albumName, photos }.
 export function parseAlbum(html) {
   if (html.includes("Album s přístupem na kód")) {
     if (html.includes("Příliš mnoho neúspěšných pokusů")) {
@@ -92,21 +114,10 @@ export function parseAlbum(html) {
     return { error: "AUTH_REQUIRED" };
   }
 
-  let arrStr = null;
-  for (const line of html.split(/\r?\n/)) {
-    if (line.includes("legacy_media") && line.includes("photoID")) {
-      const start = line.indexOf("[");
-      if (start >= 0) {
-        const candidate = extractJsonArray(line, start);
-        if (candidate) {
-          arrStr = candidate;
-          break;
-        }
-      }
-    }
-  }
+  let arrStr = findMediaArray(html);
 
-  // Fallback for non-minified pages where the array spans multiple lines.
+  // Fallback for pages that no longer use the `legacy_media` key: take the
+  // array that encloses the first "photoID" occurrence.
   if (!arrStr) {
     const pid = html.indexOf('"photoID"');
     if (pid >= 0) {
@@ -124,6 +135,7 @@ export function parseAlbum(html) {
     return { error: "PARSE_ERROR" };
   }
   if (!Array.isArray(photos)) return { error: "PARSE_ERROR" };
+  if (!looksLikeMedia(photos)) return { error: "PARSE_ERROR" };
 
   return { albumName: getParameterValue("album_name", html), photos };
 }
